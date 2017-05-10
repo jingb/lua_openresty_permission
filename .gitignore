@@ -40,4 +40,4 @@ luac.out
 *.hex
 
 # Log
-*.log
+/logs
