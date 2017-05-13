@@ -1,6 +1,7 @@
-local pre_utils = require "permission.wildcard_permission"
-ngx.say("come in test.lua")
+local url = ngx.var.request_uri
+local reg = '([a-z]+)/(create|query|update|delete)/?(\\d*)'
+local m, err = ngx.re.match(url, reg)
 
---local req_permission = 'user:view'
---local permissions = {'jingb', 'eliza'}
---pre_utils.implies(req_permission, permissions)
+ngx.say(m[0])
+ngx.say(m[1])
+ngx.say(m[2])

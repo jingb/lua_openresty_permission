@@ -204,6 +204,7 @@ local function do_command(self, cmd, ... )
         return nil, err
     end
 
+    -- ngx.log(ngx.ERR, "type of redis_c is: ", type(redis))
     local fun = redis[cmd]
     local result, err = fun(redis, ...)
     if not result or err then

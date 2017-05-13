@@ -6,10 +6,20 @@ local http_utils = require "lib.http_utils"
 local ngx_log = ngx.log
 local ngx_ERR = ngx.ERR
 local ngx_exit = ngx.exit
+local ngx_var = ngx.var
 
-local req_model = ngx.var.model
-local req_action = ngx.var.action
-local req_instance = ngx.var.instance
+local url = ngx_var.request_uri
+local reg = '([a-z]+)/(create|query|update|delete)/?(\\d*)'
+local m, err = ngx.re.match(url, reg)
+
+--local req_model = ngx_var.model or m[1]
+--local req_action = ngx_var.action or m[2]
+--local req_instance = ngx_var.instance or m[3]
+local req_model = m[1]
+local req_action = m[2]
+local req_instance = m[3]
+
+ngx_log(ngx_ERR, "req model: ", req_model)
 
 local utils = require "lib.db_utils"
 local sql = [[
@@ -19,7 +29,7 @@ local sql = [[
   join sys_user t2 on FIND_IN_SET(t1.id, t2.role_ids)
   where t2.username = '%s';
 ]];
-local user_name = ngx.var.http_username
+local user_name = ngx_var.http_username
 
 if not user_name then
   ngx.say("username header is required")
@@ -65,8 +75,6 @@ local req_permission = req_model .. ':' .. req_action
 if req_instance then req_permission = req_permission .. ":" .. req_instance end
 
 -- local reqs = {reqPermissions = {req_permission}, hasPermissions = cjson.empty_array}
--- ngx_log(ngx_ERR, "resources type: ", type(resources))
--- ngx_log(ngx_ERR, "resources type: ", cjson.encode(resources))
 local reqs = {reqPermissions = {req_permission}, hasPermissions = resources}
 
 local resp = http_utils.req(url, cjson.encode(reqs), ngx.HTTP_POST, true)
@@ -81,5 +89,4 @@ if resp['code'] == '00' and not resp['data'] then
 else 
   ngx_log(ngx_ERR, "passed the permissions check")
 end
-
 
